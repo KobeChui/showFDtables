@@ -62,13 +62,15 @@ Process_Info* collect_fd(pid_t pid){
         }
 
         fd_content[content_length] = '\0';
-
+        //printf("fd: %d\n", fd);
         FD_Entry* new_fd = create_new_fd(fd, fd_content, inode);
-        
+        //printf("new_fd->fd: %d\n", new_fd->fd);
+        new_process->fd_size++;
         if(add_fd_to_process(new_fd, new_process) == 0){
-            new_process->fd_size++;
+            //new_process->fd_size++;
         }
     }
+    //printf("new_process->fd_size++: %d\n", new_process->fd_size);
 
     closedir(fd_directory);
 

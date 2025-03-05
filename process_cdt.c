@@ -37,7 +37,7 @@ int add_fd_to_process(FD_Entry* fd_entry, Process_Info* process){
     }
     if (process->fd_list == NULL) {
         process->fd_list = fd_entry;
-        return -1;
+        return 0;
     } 
     
     FD_Entry* temp = process->fd_list;

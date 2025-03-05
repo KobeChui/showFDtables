@@ -34,7 +34,7 @@ int main(int argc , char** argv){
     if(flag.threshold >= 0){ //FD starts from 0
         print_threshold(process_list, flag.threshold);
     }
-    if(!(flag.process || flag.system_wide || flag.vnodes || flag.composite || flag.summary || flag.threshold)){
+    if(!(flag.process || flag.system_wide || flag.vnodes || flag.composite || flag.summary || flag.threshold != -1)){
         print_per_process(process_list, flag.pid);
         print_system_wide(process_list, flag.pid);
         print_vnode(process_list, flag.pid);

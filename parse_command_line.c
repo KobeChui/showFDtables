@@ -1,7 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include "parse_command_line.h"
+
+int positional_argument_checker(int argc, char** argv){
+    int flag_found = 0;
+    for(int i=1; i<argc; i++){
+        if(strncmp(argv[i], "--", 2) == 0){ //flag found
+            flag_found++;
+            continue;
+        }
+        if(flag_found){
+            return -1;
+        }
+    }
+    return 0;
+}
 
 void parse_arguments(flags* flag, int argc, char** argv){
     flag->pid = -1;
@@ -21,6 +36,12 @@ void parse_arguments(flags* flag, int argc, char** argv){
         {"threshold", required_argument, NULL, 't'},
         {0,0,0,0}
     };
+
+    //Check positional argument placement first
+    if(positional_argument_checker(argc, argv) == -1){
+        fprintf(stderr, "Positional argument found after flags.\n");
+        exit(1);
+    }
 
     int option;
     int option_index = 0;
