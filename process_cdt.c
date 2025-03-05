@@ -31,13 +31,22 @@ FD_Entry* create_new_fd(int fd, char* file_name, ino_t inode){
     return new_fd_entry;
 }
 
-void add_fd_to_process(FD_Entry* fd_entry, Process_Info* process){
+int add_fd_to_process(FD_Entry* fd_entry, Process_Info* process){
     if(fd_entry == NULL || process == NULL){
-        return;
+        return -1;
     }
-    fd_entry->next = process->fd_list;
-    process->fd_list = fd_entry;
-    return;
+    if (process->fd_list == NULL) {
+        process->fd_list = fd_entry;
+        return -1;
+    } 
+    
+    FD_Entry* temp = process->fd_list;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = fd_entry;
+    
+    return 0;
 }
 
 void free_process_info(Process_Info* root){

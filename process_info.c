@@ -28,6 +28,7 @@ Process_Info* collect_fd(pid_t pid){
     }
 
     Process_Info* new_process = create_new_process(pid);
+    new_process->fd_size = 0;
 
     struct dirent* fd_entry;
 
@@ -63,7 +64,10 @@ Process_Info* collect_fd(pid_t pid){
         fd_content[content_length] = '\0';
 
         FD_Entry* new_fd = create_new_fd(fd, fd_content, inode);
-        add_fd_to_process(new_fd, new_process);
+        
+        if(add_fd_to_process(new_fd, new_process) == 0){
+            new_process->fd_size++;
+        }
     }
 
     closedir(fd_directory);

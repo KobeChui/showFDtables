@@ -54,9 +54,9 @@ void parse_arguments(flags* flag, int argc, char** argv){
 
             flag->threshold = (int)strtol(optarg, &endptr, 10);
             
-            //Check possibly non-digit character
+            //Check possibly non-digit character, and only accept ints
             //If strtol reads a int then endptr must be \0
-            if(*endptr != '\0'){
+            if(*endptr != '\0' || flag->threshold < 0){
                 fprintf(stderr, "Invalid argument for --threshold.\n");
                 exit(1);
             }
