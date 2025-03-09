@@ -4,6 +4,11 @@
 
 
 void print_per_process(Process_Info* process, pid_t pid) {
+    ///_|> descry: Prints process FD table
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> pid: A specified PID by the user, type: pid_t
+    ///_|> returning: This function returns nothing
+
     printf("        PID        FD\n");
     printf("      =================\n");
     
@@ -28,12 +33,19 @@ void print_per_process(Process_Info* process, pid_t pid) {
     return;
 }
 void print_system_wide(Process_Info* process, pid_t pid){
+    ///_|> descry: Prints system-wide FD table
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> pid: A specified PID by the user, type: pid_t
+    ///_|> returning: This function returns nothing
+
     printf("        PID        FD         Filename\n");
     printf("      ===================================\n");
     
     int row_num = 1;
     for (Process_Info* p = process; p != NULL; p = p->next) {
         if(pid != -1 && pid != p->pid){
+            //pid == -1 means it is not specified
+            //If pid != -1 then we only proceed if pid matches
             continue;
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
@@ -50,12 +62,19 @@ void print_system_wide(Process_Info* process, pid_t pid){
 }
 
 void print_vnode(Process_Info* process, pid_t pid){
+    ///_|> descry: Prints vnode FD table
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> pid: A specified PID by the user, type: pid_t
+    ///_|> returning: This function returns nothing
+
     printf("        FD         Inode\n");
     printf("      ====================\n");
     
     int row_num = 1;
     for (Process_Info* p = process; p != NULL; p = p->next) {
         if(pid != -1 && pid != p->pid){
+            //pid == -1 means it is not specified
+            //If pid != -1 then we only proceed if pid matches
             continue;
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
@@ -72,12 +91,19 @@ void print_vnode(Process_Info* process, pid_t pid){
 }
 
 void print_composite(Process_Info* process, pid_t pid){
+    ///_|> descry: Prints a composed view of process FD table, system-wide FD table, and Vnodes FD table
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> pid: A specified PID by the user, type: pid_t
+    ///_|> returning: This function returns nothing
+
     printf("        PID        FD         Filename             Inode\n");
     printf("      ====================================================\n");
     
     int row_num = 1;
     for (Process_Info* p = process; p != NULL; p = p->next) {
         if(pid != -1 && pid != p->pid){
+            //pid == -1 means it is not specified
+            //If pid != -1 then we only proceed if pid matches
             continue;
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
@@ -94,9 +120,14 @@ void print_composite(Process_Info* process, pid_t pid){
 }
 
 void print_summary(Process_Info* process){
+    ///_|> descry: Prints a summarized table indicating the number of FDs open per process.
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> returning: This function returns nothing
+
     printf("        Summary Table\n");
     printf("      =================\n");
 
+    //Prints in the format of: pid (# of fd), pid (# of fd), ...
     for(Process_Info* p = process; p != NULL; p = p->next){
         printf("%d (%d), ", p->pid, p->fd_size);
     }
@@ -105,16 +136,23 @@ void print_summary(Process_Info* process){
 }
 
 void print_threshold(Process_Info* process, int threshold){
+    ///_|> descry: Prints a summarized table indicating the number of FDs open per process.
+    ///_|>         Only entries of a number of FDs larger than threshold are printed.
+    ///_|> process: A list of processes, type: Process_Info*
+    ///_|> threshold: Indicates the maximum of number of FDs, type: int
+    ///_|> returning: This function returns nothing
+
     printf("## Offending processes:\n");
 
     int has_exceeded = 0;
     for (Process_Info* p = process; p != NULL; p = p->next) {
         if (p->fd_size > threshold) {
             printf("%d (%d), ", p->pid, p->fd_size);
-            has_exceeded++;
+            has_exceeded++; //There is at least one entry of pid (# of fd)
         }
     }
 
+    //Prints None if there is no entry of pid (# of fd) whatsoever
     if(has_exceeded == 0){
         printf("None");
     }

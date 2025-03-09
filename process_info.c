@@ -8,8 +8,13 @@
 #include "process.h"
 
 Process_Info* collect_fd(pid_t pid){
+    ///_|> descry: Retrieve all necessary FD information from given PID pid.
+    ///_|> pid: Indicates the unique PID for the process of which its FD information is to be collected, type: pid_t
+    ///_|> returning: This function returns a pointer to a process with PID pid and its corresponding FD information, type: Process_Info*
+
+    //Get path name to fd with the specified PID, and open this directory
     char pid_fd_path[256];
-    snprintf(pid_fd_path, sizeof(pid_fd_path), "/proc/%d/fd", pid);
+    snprintf(pid_fd_path, sizeof(pid_fd_path), "/proc/%d/fd", pid); 
 
     DIR* fd_directory = opendir(pid_fd_path);
     if(fd_directory == NULL){
@@ -20,16 +25,26 @@ Process_Info* collect_fd(pid_t pid){
     Process_Info* new_process = create_new_process(pid);
     new_process->fd_size = 0;
 
+    //Begins to go through all files in fd_directory
     struct dirent* fd_entry;
 
     while((fd_entry = readdir(fd_directory)) != NULL){
+        // Skip "." and ".."
+        // "." represents pointer to current directory
+        // ".." represents pointer to parent directory (to navigate backwards)
         if(strncmp(fd_entry->d_name, ".", 1) == 0 || strncmp(fd_entry->d_name, "..", 2) == 0){
             continue;
         }
 
         char* endptr = NULL;
         int fd = (int)strtol(fd_entry->d_name, &endptr, 10);
+        
+        //Check if fd is a negative number.
+        if (*endptr != '\0' || endptr == fd_entry->d_name || fd < 0) {
+            continue;
+        }
 
+        //Use PATH_MAX as file directories could be very long in length
         char fd_link[PATH_MAX];
         char fd_content[PATH_MAX];
 
@@ -52,8 +67,10 @@ Process_Info* collect_fd(pid_t pid){
         }
         fd_content[content_length] = '\0';
         
+        //We have obtained all necessary information for a FD.
         FD_Entry* new_fd = create_new_fd(fd, fd_content, inode);
 
+        //Update the size of fd_list in new_process if adding new_FD is successful.
         if(add_fd_to_process(new_fd, new_process) == 0){
             new_process->fd_size++;
         }
@@ -65,6 +82,9 @@ Process_Info* collect_fd(pid_t pid){
 }
 
 Process_Info* collect_process(){
+    ///_|> descry: Retrieve all process information available and accessible from /proc.
+    ///_|> returning: This function returns a pointer to a linked list of processes, type: Process_Info*
+
     DIR* process_directory = opendir("/proc");
     //Terminating the program because if we can't access /proc then we can't do anything
     if(process_directory == NULL){
