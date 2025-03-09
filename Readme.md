@@ -47,7 +47,8 @@ TITLE -- Assignment 2: Recreating the System-Wide FD Tables
     Note that --threshold=n gives PIDs with number of FDs that are strictly greater than n, so anything equals n will not be printed.
 
 5.  Flow chart
-    
+    ![Flow Chart](Flowchart.jpg)
+
 6.  Instructions to compile my code
     $ make
 
