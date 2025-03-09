@@ -10,8 +10,6 @@ int main(int argc , char** argv){
     flags flag;
     parse_arguments(&flag, argc, argv);
 
-    printf("pid %d\n", flag.pid); printf("--per-process %d\n", flag.process); printf("--systemWide %d\n", flag.system_wide); printf("--Vnodes %d\n", flag.vnodes); printf("--composite %d\n", flag.composite); printf("--summary %d\n", flag.summary); printf("--threshold= %d\n", flag.threshold);
-
     //Retrieve all information on every single process.
     Process_Info* process_list = collect_process();
     if(process_list == NULL){

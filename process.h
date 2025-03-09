@@ -2,7 +2,7 @@
 #define PROCESS_H
 
 #include <sys/types.h>
-#include <limits.h>
+#include <linux/limits.h>
 
 typedef struct FD_Entry_Struct{
     int fd;                         //File descriptor number
