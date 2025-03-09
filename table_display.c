@@ -10,10 +10,14 @@ void print_per_process(Process_Info* process, pid_t pid) {
     int row_num = 1;
     for (Process_Info* p = process; p != NULL; p = p->next) {
         if(pid != -1 && pid != p->pid){
+            //pid == -1 means it is not specified
+            //If pid != -1 then we only proceed if pid matches
             continue;
         }
+
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
             if(pid == -1){
+                //print row num if pid is specified
                 printf(" %-6d %-10d %d\n", row_num, p->pid, fd->fd);
                 continue;
             }
@@ -33,6 +37,7 @@ void print_system_wide(Process_Info* process, pid_t pid){
             continue;
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
+            //print row num if pid is specified
             if(pid == -1){
                 printf(" %-6d %-10d %-10d %-10s\n", row_num, p->pid, fd->fd, fd->file_name);
                 continue;
@@ -54,6 +59,7 @@ void print_vnode(Process_Info* process, pid_t pid){
             continue;
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
+            //print row num if pid is specified
             if(pid == -1){
                 printf(" %-6d %-10d %-10ld\n", row_num, fd->fd, fd->inode);
                 continue;
@@ -76,6 +82,7 @@ void print_composite(Process_Info* process, pid_t pid){
         }
         for (FD_Entry* fd = p->fd_list; fd != NULL; fd = fd->next, row_num++) {
             if(pid == -1){
+                //print row num if pid is specified
                 printf(" %-6d %-10d %-10d %-10s%-10s %ld\n", row_num, p->pid, fd->fd, fd->file_name, "", fd->inode);
                 continue;
             }

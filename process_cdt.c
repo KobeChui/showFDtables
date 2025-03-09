@@ -35,12 +35,14 @@ int add_fd_to_process(FD_Entry* fd_entry, Process_Info* process){
     if(fd_entry == NULL || process == NULL){
         return -1;
     }
-    if (process->fd_list == NULL) {
+    if (process->fd_list == NULL) { //Empty linked list
         process->fd_list = fd_entry;
         return 0;
     } 
     
     FD_Entry* temp = process->fd_list;
+
+    //Add to tail of linked list
     while (temp->next != NULL) {
         temp = temp->next;
     }
@@ -51,12 +53,15 @@ int add_fd_to_process(FD_Entry* fd_entry, Process_Info* process){
 
 void free_process_info(Process_Info* root){
     while (root != NULL){
+        //Free FDs for each process
         FD_Entry* fd_root = root->fd_list;
         while (fd_root != NULL){
             FD_Entry* temp = fd_root;
             fd_root = fd_root->next;
             free(temp);
         }
+
+        //All FDs freed, free process
         Process_Info* temp_process = root;
         root = root->next;
         free(temp_process);

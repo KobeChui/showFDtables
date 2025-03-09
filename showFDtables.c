@@ -16,6 +16,7 @@ int main(int argc , char** argv){
         fprintf(stderr, "No process found.\n");
         exit(1);
     }
+
     if(flag.process){
         print_per_process(process_list, flag.pid);
     }
@@ -40,6 +41,7 @@ int main(int argc , char** argv){
         print_vnode(process_list, flag.pid);
         print_composite(process_list, flag.pid);
     }
+    
     free_process_info(process_list);
 
     return 0;

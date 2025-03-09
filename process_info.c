@@ -7,16 +7,6 @@
 #include <unistd.h>
 #include "process.h"
 
-void print_table(Process_Info* head) {
-    printf(" PID     FD       Filename                               Inode\n=====================================================================\n");
-
-    for (Process_Info* proc = head; proc; proc = proc->next) {
-        for (FD_Entry* fd = proc->fd_list; fd; fd = fd->next) {
-            printf("%-8d %-8d %-40s %-8lu\n", proc->pid, fd->fd, fd->file_name, fd->inode);
-        }
-    }
-}
-
 Process_Info* collect_fd(pid_t pid){
     char pid_fd_path[256];
     snprintf(pid_fd_path, sizeof(pid_fd_path), "/proc/%d/fd", pid);
@@ -60,17 +50,14 @@ Process_Info* collect_fd(pid_t pid){
         if(content_length == -1){
             continue; //Skip the fd that we do not have permission to open
         }
-
         fd_content[content_length] = '\0';
-        //printf("fd: %d\n", fd);
+        
         FD_Entry* new_fd = create_new_fd(fd, fd_content, inode);
-        //printf("new_fd->fd: %d\n", new_fd->fd);
-        new_process->fd_size++;
+
         if(add_fd_to_process(new_fd, new_process) == 0){
-            //new_process->fd_size++;
+            new_process->fd_size++;
         }
     }
-    //printf("new_process->fd_size++: %d\n", new_process->fd_size);
 
     closedir(fd_directory);
 
@@ -79,6 +66,7 @@ Process_Info* collect_fd(pid_t pid){
 
 Process_Info* collect_process(){
     DIR* process_directory = opendir("/proc");
+    //Terminating the program because if we can't access /proc then we can't do anything
     if(process_directory == NULL){
         perror("opendir");
         exit(1);
