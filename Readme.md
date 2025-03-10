@@ -23,11 +23,27 @@ TITLE -- Assignment 2: Recreating the System-Wide FD Tables
 4.  Implementation
     My code is separated into 4 main parts: the driver program - showFDtables.c, the command line parser - parse_command_line.c, process related programs - process_info.c and process_cdt.c and lastly tables printing program - table_display.c
     Header files are used to connect them, that is parse_command_line.h, process.h, and table_display.h respectively.
-    showFDtables.c is a driver programs that uses functions in parse_command_line.h to parse and save command line arguments, retrieves all accessible process information from the OS using functions from process.h, and prints the FD tables which the user specifies with flags in the command line using the functions in table_display.h
+    showFDtables.c is a driver programs that uses functions in parse_command_line.h to parse and save command line arguments, retrieves all accessible process information from the OS using functions from process.h, and prints the FD tables which the user specifies with flags in the command line using the functions in table_display.
 
     parse_command_line.h contains the struct flags which stores all the possible flags for this assignment, inlcuding --per-process, --systemWide, --Vnodes, --composite, --summary, and --threshold which requires a integer argument.
     parse_command_line.c contains the logic to parse and store the command line arguments. In particular I used getopt_long() with the struct option provided by <getopt.h> which makes reading options more convenient.
     I first checked the position of positional arguments, as it must be located before any flags appear. Then for the threshold flag, since it takes an argument, the argument must be thoroughly checked and it must be a non-negative integer. Lastly, every flag indicated is saved and I checked the validity of the positional argument which represents a specific PID.
+
+    ```c
+    //Defined a data type flags to store all the indicated flags and arguments
+    typedef struct Flags{
+        int pid;
+        int process;
+        int system_wide;
+        int vnodes;
+        int composite;
+        int summary;
+        int threshold;
+    }flags;
+
+    //Uses <getopt.h> to parse arguments. Also checked validity of arguments, inlcuding positional arguments.
+    void parse_arguments(flags* flag, int argc, char** argv);
+    ```
 
     process.h contains the two structs that I create and each of which specifically store: 
     a. the information of a certain process with its unique PID, its file descriptors (FDs) and the number of FDs for that process. 
@@ -41,10 +57,76 @@ TITLE -- Assignment 2: Recreating the System-Wide FD Tables
     I researched about efficient ways to convert integers into strings and snprintf() turns out to be the most useful for concatenating file directories with PIDs.
     _GNU_SOURCE was defined in process_info.c for readlink(), all credits to post @185 on Piazza. 
 
+    ```c
+    //Defined a data type to store FD information, including fd number, file name, inode and connected in the form of linked list.
+    typedef struct FD_Entry_Struct{
+        int fd;
+        char file_name[PATH_MAX];
+        ino_t inode;
+        struct FD_Entry_Struct* next;
+    } FD_Entry;
+
+    //Defined a data type to store process information, including PID, its FDs, number of FDs and connected in the form of linked list.
+    typedef struct Process_Info_Struct{
+        pid_t pid;
+        FD_Entry* fd_list;
+        int fd_size;                     //size of fd_list
+        struct Process_Info_Struct* next;
+    } Process_Info;
+
+    //Uses malloc to dynamically allocate memory for the Process_Info struct I created, assigned with a unique PID.
+    Process_Info* create_new_process(pid_t pid);
+
+    //Uses malloc to dynamically allocate memory for the FD_Entry struct I created, assigned with a FD number, file name, and a inode.
+    FD_Entry* create_new_fd(int fd, char* file_name, ino_t inode);
+
+    //Add fd_entry to the end of linked list fd_list in process.
+    int add_fd_to_process(FD_Entry* fd_entry, Process_Info* process);
+
+    //Free all memory that malloc allocated in root.
+    void free_process_info(Process_Info* root);
+
+    //Uses <dirent.h> were used to open, close and read directories
+    //Uses lstat() from <sys/stat.h> to initialize a struct such that inode information could be retrieved regardless it was a soft or hard link. 
+    //Uses readlink() from <unistd.h> was used to read the content of the path specified by a certain PID regardless it was a soft or hard link.
+    //Collects all FD information corresponding to the specific PID pid and join them into a Process_Info struct and return it.
+    Process_Info* collect_fd(pid_t pid);
+
+    //Uses <dirent.h> were used to open, close and read directories
+    //Look through each available PID, call collect_fd to gather each PID's FD information, then join them all into a linked list, and returned. 
+    Process_Info* collect_process();
+    ```
+
     table_display.h contains all function prototypes in table_display.c. The main purpose of this file is only to print FD tables according to any specified PID.
     Using the padding property in printf() (e.g. printf("%-10 text") prints left aligned text with at least 10 characters of space), I was able to format the tables when printing onto the shell. 
     For clarity, I added row numbers if no PID was specified in the command line so that PIDs, FDs, inodes, etc. can be referenced from different tables. 
     Note that --threshold=n gives PIDs with number of FDs that are strictly greater than n, so anything equals n will not be printed.
+
+    ```c
+    //Prints the per-process table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_per_process(Process_Info* process, int has_row_num);
+
+    //Prints the systemWide table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_system_wide(Process_Info* process, int has_row_num);
+
+    //Prints the Vnodes table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_vnode(Process_Info* process, int has_row_num);
+
+    //Prints the composite table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_composite(Process_Info* process, int has_row_num);
+
+    //Prints the summary table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_summary(Process_Info* process);
+
+    //Prints the threshold table as described in the assignment outline
+    //Using information from process and prints table according to the pid specified, in this case it is renamed to has_row_num.
+    void print_threshold(Process_Info* process, int threshold);
+    ```
 
 5.  Flow chart
     ![Flow Chart](Flowchart.jpg)
